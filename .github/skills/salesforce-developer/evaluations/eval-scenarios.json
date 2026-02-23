@@ -1,0 +1,51 @@
+[
+  {
+    "id": "dev-eval-01",
+    "title": "Apex trigger with bulkification",
+    "skills": ["salesforce-developer"],
+    "query": "Write an Apex trigger on Account that copies the BillingCity to all related Contacts' MailingCity when the Account's BillingCity changes.",
+    "expected_behavior": [
+      "Creates a single trigger per object (AccountTrigger) with a handler class",
+      "Uses 'after update' trigger event with switch on Trigger.operationType",
+      "Bulkifies: no SOQL or DML inside loops",
+      "Queries Contacts using a Map<Id, Account> pattern",
+      "Uses WITH SECURITY_ENFORCED or Security.stripInaccessible()",
+      "Includes a -meta.xml file with latest GA API version",
+      "Handler class uses 'with sharing'"
+    ]
+  },
+  {
+    "id": "dev-eval-02",
+    "title": "LWC calling Apex with error handling",
+    "skills": ["salesforce-developer"],
+    "query": "Create an LWC component called accountSearch that lets users type an account name and see matching results in a datatable.",
+    "expected_behavior": [
+      "LWC folder named accountSearch (camelCase)",
+      "HTML uses <lightning-datatable> and <lightning-input>",
+      "No inline expressions in template (no {a + b} or ternary)",
+      "JavaScript imports api, wire, or track from 'lwc' correctly",
+      "Apex controller uses @AuraEnabled(cacheable=true) for wire or @AuraEnabled for imperative",
+      "Apex uses 'with sharing' and WITH SECURITY_ENFORCED",
+      "Includes AuraHandledException for error handling",
+      "Includes js-meta.xml with targets and latest GA API version",
+      "Null-checks query results before returning"
+    ]
+  },
+  {
+    "id": "dev-eval-03",
+    "title": "Batch Apex for large data processing",
+    "skills": ["salesforce-developer"],
+    "query": "Create a Batch Apex class that finds all Contacts without an email address and flags them by setting a custom checkbox field Needs_Email__c to true.",
+    "expected_behavior": [
+      "Implements Database.Batchable<SObject> interface",
+      "start() uses Database.getQueryLocator with selective SOQL",
+      "execute() collects records in a list and performs single DML outside loop",
+      "finish() includes post-processing logic or notification",
+      "Uses WITH SECURITY_ENFORCED in SOQL",
+      "Wraps DML in try-catch",
+      "Guards DML with !list.isEmpty()",
+      "Includes a test class with 200+ records, @TestSetup, Test.startTest()/Test.stopTest()",
+      "Includes -meta.xml with latest GA API version"
+    ]
+  }
+]

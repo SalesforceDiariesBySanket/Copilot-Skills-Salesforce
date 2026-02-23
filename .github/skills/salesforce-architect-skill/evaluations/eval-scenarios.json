@@ -1,0 +1,50 @@
+[
+  {
+    "id": "arch-eval-01",
+    "title": "Multi-cloud solution architecture",
+    "skills": ["salesforce-architect-skill"],
+    "query": "Design the architecture for a B2B company that needs Sales Cloud for opportunity management, Service Cloud for case handling, and integration with an external ERP (SAP) for order fulfillment.",
+    "expected_behavior": [
+      "Applies Well-Architected pillars (Trusted > Easy > Adaptable) in priority order",
+      "Recommends standard features before custom development",
+      "Identifies Account/Contact as unifying entities across clouds",
+      "Selects an appropriate integration pattern for SAP (likely Batch Data Sync or Event-Driven)",
+      "Documents data ownership for each entity (system of record)",
+      "Recommends OAuth 2.0 for SAP integration (not username/password)",
+      "Addresses OWD and sharing model",
+      "Includes environment strategy (Dev > QA > UAT > Production)",
+      "Produces or references a solution design structure"
+    ]
+  },
+  {
+    "id": "arch-eval-02",
+    "title": "Data model review with anti-patterns",
+    "skills": ["salesforce-architect-skill"],
+    "query": "Review this data model: We have a single custom object Client__c with 450 fields that stores client info, billing data, support tickets, and project tracking. We use Profile-based security and Public Read/Write OWD.",
+    "expected_behavior": [
+      "Flags God Object anti-pattern (Client__c with 450 fields serving multiple purposes)",
+      "Recommends splitting into separate objects (Client, Billing, Support, Project)",
+      "Flags Public Read/Write OWD as an anti-pattern (SE2)",
+      "Recommends most restrictive OWD and opening up with sharing rules",
+      "Flags Profile-centric security as anti-pattern (SE1)",
+      "Recommends permission sets and permission set groups",
+      "References Well-Architected Trusted pillar for security recommendations",
+      "Does NOT recommend hardcoded IDs"
+    ]
+  },
+  {
+    "id": "arch-eval-03",
+    "title": "Automation strategy decision",
+    "skills": ["salesforce-architect-skill"],
+    "query": "We have a Process Builder and an Apex trigger both running on the Case object when a case is created. The Process Builder updates the case owner and the trigger sends a notification. We're seeing unexpected behavior. How should we fix this?",
+    "expected_behavior": [
+      "Identifies mixed automation anti-pattern (AU2 — Flow + Apex trigger on same event)",
+      "Identifies deprecated Process Builder (AU3 — should migrate to Flow)",
+      "Recommends single automation path per object per event",
+      "Recommends migrating Process Builder to Flow",
+      "Suggests either Flow or Apex trigger handles both use cases, not both",
+      "References Order of Execution to explain unexpected behavior",
+      "Recommends Flow as the de-facto standard (unless complex logic requires Apex)"
+    ]
+  }
+]
