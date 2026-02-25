@@ -25,7 +25,18 @@ official **Architect Decision Guides** from architect.salesforce.com.
 
 ## How to Use This Skill
 
-Read the appropriate reference file(s) before generating architectural designs:
+Read the appropriate reference file(s) before generating architectural designs. When the architecture involves code generation, **also** read the coding rulesets.
+
+### Step 1: Read the Coding Rulesets (when architecture leads to code)
+
+| Code Type | Ruleset File |
+|---|---|
+| Apex (classes, triggers, tests, async, integrations) | [../../Blogs/salesforce-apex-coding-rules.md](../../Blogs/salesforce-apex-coding-rules.md) |
+| LWC (components, templates, JS, events, Jest tests) | [../../Blogs/salesforce-lwc-coding-rules.md](../../Blogs/salesforce-lwc-coding-rules.md) |
+
+These rulesets contain comprehensive coding standards, anti-patterns, and code examples. Apply these rules whenever generating code as part of an architecture deliverable.
+
+### Step 2: Read the Architecture Reference File(s)
 
 | User's Task | Reference File |
 |---|---|
@@ -33,7 +44,13 @@ Read the appropriate reference file(s) before generating architectural designs:
 | Integration patterns, API selection, event-driven architecture, middleware, Pub/Sub API, Data 360, batch sync | [references/integration-patterns.md](references/integration-patterns.md) |
 | Well-Architected reviews, security validation, performance, compliance, CI/CD, testing strategy | [references/well-architected-checklist.md](references/well-architected-checklist.md) |
 
-For complex tasks (e.g., "design a multi-cloud architecture with integrations"), read **multiple** reference files.
+### Step 3: Cross-Reference the Developer Skill (for implementation details)
+
+For tasks that require both architecture and implementation, also read:
+- **Developer Skill:** [../salesforce-developer/SKILL.md](../salesforce-developer/SKILL.md) — Apex patterns, LWC guide, SOQL optimization, deployment, Agentforce
+- Then read the relevant **reference files** inside `../salesforce-developer/references/` (e.g., `apex-patterns.md`, `lwc-guide.md`, `api-integration.md`)
+
+For complex tasks (e.g., "design a multi-cloud architecture with integrations"), read **multiple** reference files from both skills and **both** coding rulesets.
 
 ---
 
@@ -377,6 +394,9 @@ Depending on what the user needs, produce:
 
 ## Quick Reference Pointers
 
+- **Apex coding rules (full ruleset)** → [../../Blogs/salesforce-apex-coding-rules.md](../../Blogs/salesforce-apex-coding-rules.md)
+- **LWC coding rules (full ruleset)** → [../../Blogs/salesforce-lwc-coding-rules.md](../../Blogs/salesforce-lwc-coding-rules.md)
+- **Developer skill (Apex, LWC, SOQL patterns)** → [../salesforce-developer/SKILL.md](../salesforce-developer/SKILL.md)
 - **Data model, sharing, LDV, data skew** → [references/data-model-patterns.md](references/data-model-patterns.md)
 - **Integration patterns, API selection, event-driven** → [references/integration-patterns.md](references/integration-patterns.md)
 - **Well-Architected checklist, security, compliance** → [references/well-architected-checklist.md](references/well-architected-checklist.md)

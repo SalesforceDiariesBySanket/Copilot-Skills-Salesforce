@@ -17,7 +17,18 @@ compatibility: Designed for VS Code, Claude Code, Cursor, and GitHub Copilot cod
 
 ## How to Use This Skill
 
-Read the appropriate reference file(s) before generating code:
+Read the appropriate reference file(s) **AND** the corresponding coding ruleset before generating code:
+
+### Step 1: Read the Coding Rulesets (MANDATORY for all code generation)
+
+| Code Type | Ruleset File |
+|---|---|
+| Apex (classes, triggers, tests, async, integrations) | [../../Blogs/salesforce-apex-coding-rules.md](../../Blogs/salesforce-apex-coding-rules.md) |
+| LWC (components, templates, JS, events, Jest tests) | [../../Blogs/salesforce-lwc-coding-rules.md](../../Blogs/salesforce-lwc-coding-rules.md) |
+
+These rulesets contain comprehensive coding standards, anti-patterns, PMD/ESLint rules, and code examples. **Always** apply these rules to all generated code.
+
+### Step 2: Read the Appropriate Reference File(s)
 
 | User's Task | Reference File |
 |---|---|
@@ -31,7 +42,13 @@ Read the appropriate reference file(s) before generating code:
 | Deployment, sf CLI, scratch orgs, CI/CD, packaging | [references/deployment-devops.md](references/deployment-devops.md) |
 | Agentforce, AI agents, Prompt Builder, platform events, CDC | [references/agentforce-ai.md](references/agentforce-ai.md) |
 
-For complex tasks (e.g., "build an LWC that calls Apex"), read **multiple** reference files.
+### Step 3: Cross-Reference the Architect Skill (for design questions)
+
+For tasks involving architecture, data modeling, integration patterns, or solution design, also read:
+- **Architect Skill:** [../salesforce-architect-skill/SKILL.md](../salesforce-architect-skill/SKILL.md) — Well-Architected framework, decision guides, integration patterns
+- Then read the relevant **reference files** inside `../salesforce-architect-skill/references/` (e.g., `data-model-patterns.md`, `integration-patterns.md`, `well-architected-checklist.md`)
+
+For complex tasks (e.g., "build an LWC that calls Apex with integration"), read **multiple** reference files from both skills AND **both** rulesets.
 
 ---
 
@@ -260,6 +277,9 @@ force-app/main/default/
 
 ## Quick Reference Pointers
 
+- **Apex coding rules (full ruleset)** → [../../Blogs/salesforce-apex-coding-rules.md](../../Blogs/salesforce-apex-coding-rules.md)
+- **LWC coding rules (full ruleset)** → [../../Blogs/salesforce-lwc-coding-rules.md](../../Blogs/salesforce-lwc-coding-rules.md)
+- **Architecture & solution design** → [../salesforce-architect-skill/SKILL.md](../salesforce-architect-skill/SKILL.md)
 - **Security & sharing rules** → [references/security-sharing.md](references/security-sharing.md)
 - **Agentforce, platform events, CDC** → [references/agentforce-ai.md](references/agentforce-ai.md)
 - **OAuth, Named Credentials, Connected Apps** → [references/api-integration.md](references/api-integration.md)
