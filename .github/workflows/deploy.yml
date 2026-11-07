@@ -1,0 +1,34 @@
+name: Deploy to Salesforce
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+    
+    - name: Install Salesforce CLI
+      run: |
+        npm install --global @salesforce/cli
+        sf plugins install @salesforce/plugin-dev
+    
+    - name: Authenticate to Salesforce
+      run: |
+        echo "${{ secrets.SALESFORCE_AUTH }}" > auth.json
+        sf org login sfdx-url --sfdx-url-file auth.json --alias production
+    
+    - name: Deploy to Production
+      run: sf project deploy start --manifest manifest/package.xml --target-org production --wait 30
+    
+    - name: Run post-deployment tests
+      run: sf apex run test --target-org production --wait 30
