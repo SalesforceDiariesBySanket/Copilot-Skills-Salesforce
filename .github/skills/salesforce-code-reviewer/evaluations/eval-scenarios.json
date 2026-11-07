@@ -1,0 +1,459 @@
+[
+  {
+    "id": "review-eval-01",
+    "title": "Security vulnerability detection in Apex service class",
+    "skills": ["salesforce-code-reviewer"],
+    "scenario": "Review an Apex service class that queries Contacts and returns them to an LWC, with potential SOQL injection and missing FLS validation",
+    "code_snippet": {
+      "type": "apex",
+      "class": "ContactQueryService.cls",
+      "issues_present": [
+        "SOQL injection: String concatenation in WHERE clause without bind variables",
+        "Missing WITH SECURITY_ENFORCED in SOQL",
+        "No FLS validation before returning contact data",
+        "Missing 'with sharing' declaration on class"
+      ]
+    },
+    "expected_findings": [
+      {
+        "severity": "CRITICAL",
+        "issue": "SOQL injection vulnerability",
+        "checklist": "security-compliance-review-checklist.md",
+        "guidance": "Use bind variables (:) instead of string concatenation in SOQL WHERE clauses"
+      },
+      {
+        "severity": "CRITICAL",
+        "issue": "Missing WITH SECURITY_ENFORCED in SOQL query",
+        "checklist": "security-compliance-review-checklist.md",
+        "guidance": "Add WITH SECURITY_ENFORCED or WITH USER_MODE to enforce FLS at query time"
+      },
+      {
+        "severity": "HIGH",
+        "issue": "Missing 'with sharing' keyword on class",
+        "checklist": "security-compliance-review-checklist.md",
+        "guidance": "Add 'public with sharing' to enforce sharing rules"
+      },
+      {
+        "severity": "MEDIUM",
+        "issue": "Returned records may contain inaccessible fields",
+        "checklist": "security-compliance-review-checklist.md",
+        "guidance": "Use Security.stripInaccessible() to remove fields user cannot access"
+      }
+    ]
+  },
+  {
+    "id": "review-eval-02",
+    "title": "Performance issue detection: SOQL in loop",
+    "skills": ["salesforce-code-reviewer"],
+    "scenario": "Review an Apex batch job that processes records and queries related data inside a loop, violating bulkification principles",
+    "code_snippet": {
+      "type": "apex",
+      "class": "OrderProcessingBatch.cls",
+      "issues_present": [
+        "SOQL query inside for loop",
+        "No governor limit consideration",
+        "Missing error handling",
+        "Inefficient collection usage"
+      ]
+    },
+    "expected_findings": [
+      {
+        "severity": "CRITICAL",
+        "issue": "SOQL query inside loop (bulkification violation)",
+        "checklist": "performance-governorlimits-review-checklist.md",
+        "guidance": "Move SOQL outside loop. Use Map<Id, List<>> to collect related records in single query"
+      },
+      {
+        "severity": "HIGH",
+        "issue": "Governor limit risk: 100 SOQL query limit will be exceeded",
+        "checklist": "performance-governorlimits-review-checklist.md",
+        "guidance": "For 1000+ records, you'll execute 1000+ SOQL queries instead of 1"
+      },
+      {
+        "severity": "HIGH",
+        "issue": "No error handling in execute() method",
+        "checklist": "error-handling-review-checklist.md",
+        "guidance": "Wrap DML in try-catch-finally and log errors with proper context"
+      },
+      {
+        "severity": "MEDIUM",
+        "issue": "Missing DML bulk guard",
+        "checklist": "error-handling-review-checklist.md",
+        "guidance": "Check !recordsToUpdate.isEmpty() before performing DML"
+      }
+    ]
+  },
+  {
+    "id": "review-eval-03",
+    "title": "Architecture review: Trigger logic violation",
+    "skills": ["salesforce-code-reviewer"],
+    "scenario": "Review an Apex trigger with business logic directly in trigger body instead of delegating to handler/service classes",
+    "code_snippet": {
+      "type": "apex",
+      "file": "AccountTrigger.trigger",
+      "issues_present": [
+        "Trigger contains business logic (should be logic-free)",
+        "Direct SOQL and DML in trigger",
+        "No handler or service class delegation",
+        "No recursive execution prevention",
+        "Missing test coverage"
+      ]
+    },
+    "expected_findings": [
+      {
+        "severity": "CRITICAL",
+        "issue": "Business logic in trigger body violates architecture pattern",
+        "checklist": "sf-design-pattern-review-checklist.md",
+        "guidance": "Triggers must be logic-free. Delegate to handler class extending KC_TriggerHandler"
+      },
+      {
+        "severity": "HIGH",
+        "issue": "No recursive execution prevention",
+        "checklist": "apex-review-checklist.md",
+        "guidance": "Add static Set<Id> processedIds field and check before processing"
+      },
+      {
+        "severity": "HIGH",
+        "issue": "SOQL/DML directly in trigger context",
+        "checklist": "sf-design-pattern-review-checklist.md",
+        "guidance": "Move logic to Service class with testable methods"
+      },
+      {
+        "severity": "MEDIUM",
+        "issue": "No Trigger → Handler → Service → Selector layer separation",
+        "checklist": "sf-design-pattern-review-checklist.md",
+        "guidance": "Follow established pattern: Trigger delegates to Handler, Handler to Service, Service to Selector"
+      }
+    ]
+  },
+  {
+    "id": "review-eval-04",
+    "title": "LWC best practices review: Template & JavaScript issues",
+    "skills": ["salesforce-code-reviewer"],
+    "scenario": "Review an LWC component with template syntax errors and improper Apex integration patterns",
+    "code_snippet": {
+      "type": "lwc",
+      "component": "recordEditor",
+      "issues_present": [
+        "Inline expression in template (ternary operator)",
+        "Using @AuraEnabled(cacheable=true) with DML method",
+        "Event names with hyphens instead of lowercase",
+        "No error handling for Apex callout",
+        "Missing accessibility attributes"
+      ]
+    },
+    "expected_findings": [
+      {
+        "severity": "CRITICAL",
+        "issue": "Inline ternary operator in template: {record.status === 'Active' ? 'Yes' : 'No'}",
+        "checklist": "lwc-review-checklist.md",
+        "guidance": "LWC templates do NOT support inline expressions. Create JavaScript getter: get isActive() { return this.record.status === 'Active'; }"
+      },
+      {
+        "severity": "CRITICAL",
+        "issue": "@AuraEnabled(cacheable=true) on method that performs DML",
+        "checklist": "lwc-review-checklist.md",
+        "guidance": "Cacheable methods must be read-only. Remove cacheable=true or move DML to separate imperative method"
+      },
+      {
+        "severity": "HIGH",
+        "issue": "Event dispatched with hyphenated name: 'record-updated'",
+        "checklist": "lwc-review-checklist.md",
+        "guidance": "LWC event names must be lowercase only: 'recordupdated'. Parent listens with onrecordupdated={handler}"
+      },
+      {
+        "severity": "HIGH",
+        "issue": "No error handling for Apex callout",
+        "checklist": "error-handling-review-checklist.md",
+        "guidance": "Wrap imperative Apex calls in try-catch with error message display using ShowToastEvent"
+      },
+      {
+        "severity": "MEDIUM",
+        "issue": "Missing loading spinner during async operations",
+        "checklist": "lwc-review-checklist.md",
+        "guidance": "Add <lightning-spinner> and control with loading state variable during Apex calls"
+      }
+    ]
+  },
+  {
+    "id": "review-eval-05",
+    "title": "Test coverage and quality review",
+    "skills": ["salesforce-code-reviewer"],
+    "scenario": "Review an Apex test class that lacks proper test structure, edge cases, and bulk operation testing",
+    "code_snippet": {
+      "type": "apex",
+      "class": "OrderServiceTest.cls",
+      "issues_present": [
+        "Coverage only 60% (below 75% threshold)",
+        "No @TestSetup annotation",
+        "Test methods lack descriptive names",
+        "Missing negative test cases",
+        "No bulk operation testing (200+ records)",
+        "Missing assertion messages"
+      ]
+    },
+    "expected_findings": [
+      {
+        "severity": "CRITICAL",
+        "issue": "Test coverage 60% is below 75% deployment minimum",
+        "checklist": "testcoverage-quality-review-checklist.md",
+        "guidance": "Achieve minimum 75% coverage, target 90%+ for critical business logic"
+      },
+      {
+        "severity": "HIGH",
+        "issue": "No @TestSetup method for shared test data",
+        "checklist": "testcoverage-quality-review-checklist.md",
+        "guidance": "Use @TestSetup to create test data once, shared across all test methods"
+      },
+      {
+        "severity": "HIGH",
+        "issue": "Missing negative test cases",
+        "checklist": "testcoverage-quality-review-checklist.md",
+        "guidance": "Test both positive (happy path) and negative (error) scenarios"
+      },
+      {
+        "severity": "MEDIUM",
+        "issue": "No bulk operation testing (200+ records)",
+        "checklist": "testcoverage-quality-review-checklist.md",
+        "guidance": "Create test method with 200+ records to validate bulkification and governor limits"
+      },
+      {
+        "severity": "MEDIUM",
+        "issue": "Assertions lack descriptive messages",
+        "checklist": "testcoverage-quality-review-checklist.md",
+        "guidance": "Add message parameter to assert: Assert.areEqual(expected, actual, 'Should have 5 orders')"
+      }
+    ]
+  },
+  {
+    "id": "review-eval-06",
+    "title": "Deployment readiness check",
+    "skills": ["salesforce-code-reviewer"],
+    "scenario": "Review a deployment package for metadata completeness, permission sets, and rollback readiness",
+    "code_snippet": {
+      "type": "package",
+      "deployment": "Feature XYZ",
+      "issues_present": [
+        "Missing -meta.xml files on new classes",
+        "No permission set updates for new custom field",
+        "No rollback plan documented",
+        "CI/CD pipeline not configured",
+        "Database migration scripts missing"
+      ]
+    },
+    "expected_findings": [
+      {
+        "severity": "CRITICAL",
+        "issue": "Missing -meta.xml file on new Apex class",
+        "checklist": "deployment-readiness.md",
+        "guidance": "All Apex classes need .cls-meta.xml with API version 66.0 and access modifiers"
+      },
+      {
+        "severity": "HIGH",
+        "issue": "Permission set not updated for new custom field access",
+        "checklist": "deployment-readiness.md",
+        "guidance": "Add new custom field to existing permission sets so users can access it"
+      },
+      {
+        "severity": "HIGH",
+        "issue": "No rollback plan documented",
+        "checklist": "deployment-readiness.md",
+        "guidance": "Document rollback procedure: destructiveChanges.xml, data restoration steps, testing in sandbox"
+      },
+      {
+        "severity": "MEDIUM",
+        "issue": "CI/CD pipeline not configured",
+        "checklist": "deployment-readiness.md",
+        "guidance": "Add GitHub Actions or similar to automate testing and validation on each commit"
+      },
+      {
+        "severity": "MEDIUM",
+        "issue": "No database migration script provided",
+        "checklist": "deployment-readiness.md",
+        "guidance": "Document any data modifications needed during deployment (update scripts, data replication)"
+      }
+    ]
+  },
+  {
+    "id": "review-eval-07",
+    "title": "Error handling and logging review",
+    "skills": ["salesforce-code-reviewer"],
+    "scenario": "Review an integration class that handles callouts and DML errors improperly",
+    "code_snippet": {
+      "type": "apex",
+      "class": "ExternalServiceIntegration.cls",
+      "issues_present": [
+        "Empty catch block",
+        "DML SaveResult not checked",
+        "Sensitive data logged",
+        "No error context stored",
+        "Callout has no timeout handling"
+      ]
+    },
+    "expected_findings": [
+      {
+        "severity": "CRITICAL",
+        "issue": "Empty catch block - exceptions are swallowed",
+        "checklist": "error-handling-review-checklist.md",
+        "guidance": "Never use empty catch blocks. Always log error or rethrow. Use KC_ErrorLog for logging"
+      },
+      {
+        "severity": "CRITICAL",
+        "issue": "DML SaveResult not checked for errors",
+        "checklist": "error-handling-review-checklist.md",
+        "guidance": "Use Database.insert(records, false) and check SaveResult.isSuccess() for each record"
+      },
+      {
+        "severity": "HIGH",
+        "issue": "Sensitive data (API keys, passwords) logged",
+        "checklist": "security-compliance-review-checklist.md",
+        "guidance": "Never log sensitive data. Mask API keys, use separate secure storage"
+      },
+      {
+        "severity": "HIGH",
+        "issue": "Callout has no timeout or error handling",
+        "checklist": "error-handling-review-checklist.md",
+        "guidance": "Add try-catch for timeouts, set appropriate timeouts, implement retry logic"
+      },
+      {
+        "severity": "MEDIUM",
+        "issue": "No error context stored (which record failed, why, when)",
+        "checklist": "error-handling-review-checklist.md",
+        "guidance": "Log detailed context: record ID, operation type, error message, stack trace, timestamp"
+      }
+    ]
+  },
+  {
+    "id": "review-eval-08",
+    "title": "Code quality and maintainability review",
+    "skills": ["salesforce-code-reviewer"],
+    "scenario": "Review a utility class with poor naming conventions, large methods, and duplicate code",
+    "code_snippet": {
+      "type": "apex",
+      "class": "Utils.cls",
+      "issues_present": [
+        "Class name too generic: 'Utils' instead of domain-specific",
+        "Methods too large (>100 lines)",
+        "Duplicate code across multiple methods",
+        "Hardcoded magic numbers and strings",
+        "No JSDoc comments"
+      ]
+    },
+    "expected_findings": [
+      {
+        "severity": "HIGH",
+        "issue": "Generic class name 'Utils' violates naming conventions",
+        "checklist": "sf-design-pattern-review-checklist.md",
+        "guidance": "Use domain-specific names: AccountReconciliationHelper, ContactValidationService"
+      },
+      {
+        "severity": "MEDIUM",
+        "issue": "Method processData() is 150 lines (>50 line guideline)",
+        "checklist": "apex-review-checklist.md",
+        "guidance": "Break large methods into smaller, focused methods (<50 lines each)"
+      },
+      {
+        "severity": "MEDIUM",
+        "issue": "Duplicate code: same email validation logic in 3 methods",
+        "checklist": "sf-design-pattern-review-checklist.md",
+        "guidance": "Apply DRY principle: Extract duplicate logic to single reusable method"
+      },
+      {
+        "severity": "LOW",
+        "issue": "Hardcoded values: MAX_RETRY = 5 scattered in code",
+        "checklist": "apex-review-checklist.md",
+        "guidance": "Define constants in Constants class: public static final Integer MAX_RETRY = 5;"
+      },
+      {
+        "severity": "LOW",
+        "issue": "Missing JSDoc comments on public methods",
+        "checklist": "apex-review-checklist.md",
+        "guidance": "Add class-level and method-level comments explaining purpose and parameters"
+      }
+    ]
+  },
+  {
+    "id": "review-eval-09",
+    "title": "Aura component review with migration guidance",
+    "skills": ["salesforce-code-reviewer"],
+    "scenario": "Review an Aura component that should be migrated to LWC",
+    "code_snippet": {
+      "type": "aura",
+      "component": "accountListCmp",
+      "issues_present": [
+        "Using Aura (legacy technology)",
+        "No LWC migration path provided",
+        "Missing accessibility attributes",
+        "Inline styling instead of SLDS classes"
+      ]
+    },
+    "expected_findings": [
+      {
+        "severity": "MEDIUM",
+        "issue": "Component is built with Aura (deprecated in favor of LWC)",
+        "checklist": "aura-review-checklist.md",
+        "guidance": "Plan migration to LWC. Aura receives limited investment from Salesforce"
+      },
+      {
+        "severity": "LOW",
+        "issue": "Missing accessibility attributes (aria-labels, roles)",
+        "checklist": "lwc-review-checklist.md",
+        "guidance": "Add aria-label, role, tabindex for screen reader accessibility"
+      },
+      {
+        "severity": "LOW",
+        "issue": "Using inline styles instead of SLDS classes",
+        "checklist": "aura-review-checklist.md",
+        "guidance": "Use Salesforce Lightning Design System (SLDS) classes for consistency"
+      },
+      {
+        "severity": "ENHANCEMENT",
+        "issue": "Migration path: Convert to LWC component",
+        "checklist": "aura-review-checklist.md",
+        "guidance": "LWC is the future: simpler, faster, better performance. Plan migration in next sprint"
+      }
+    ]
+  },
+  {
+    "id": "review-eval-10",
+    "title": "Governor limits compliance check",
+    "skills": ["salesforce-code-reviewer"],
+    "scenario": "Review a synchronous Apex class that approaches or exceeds governor limits",
+    "code_snippet": {
+      "type": "apex",
+      "class": "BulkAccountProcessor.cls",
+      "issues_present": [
+        "95 SOQL queries (limit: 100)",
+        "140 DML operations (limit: 150)",
+        "Large string concatenation causing heap issues",
+        "No async processing considered"
+      ]
+    },
+    "expected_findings": [
+      {
+        "severity": "CRITICAL",
+        "issue": "95 SOQL queries, only 5 remaining before hitting 100 limit",
+        "checklist": "performance-governorlimits-review-checklist.md",
+        "guidance": "Consolidate queries. For 100+ records, use Queueable or Batch Apex"
+      },
+      {
+        "severity": "CRITICAL",
+        "issue": "140 DML operations, only 10 remaining before limit",
+        "checklist": "performance-governorlimits-review-checklist.md",
+        "guidance": "Use Database.insert/update with allOrNone=false for partial success, or use Batch Apex"
+      },
+      {
+        "severity": "HIGH",
+        "issue": "Large string concatenation in loop causing heap pressure",
+        "checklist": "performance-governorlimits-review-checklist.md",
+        "guidance": "Use StringBuilder pattern or List<String> joined with String.join() to avoid heap issues"
+      },
+      {
+        "severity": "HIGH",
+        "issue": "Synchronous execution not suitable for bulk processing",
+        "checklist": "performance-governorlimits-review-checklist.md",
+        "guidance": "Migrate to Queueable (chainable, 1 per txn) or Batch Apex (200 records per chunk)"
+      }
+    ]
+  }
+]

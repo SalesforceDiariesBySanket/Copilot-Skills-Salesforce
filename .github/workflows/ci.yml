@@ -1,0 +1,37 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+    
+    - name: Install dependencies
+      run: npm install
+    
+    - name: Run linting
+      run: npm run lint
+    
+    - name: Run tests
+      run: npm test
+    
+    - name: Install Salesforce CLI
+      run: |
+        npm install --global @salesforce/cli
+        sf plugins install @salesforce/plugin-dev
+    
+    - name: Validate deployment
+      run: |
+        sf project validate deploy start --manifest manifest/package.xml --test-level RunLocalTests
